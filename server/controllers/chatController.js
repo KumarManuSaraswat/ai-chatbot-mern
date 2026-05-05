@@ -88,8 +88,54 @@ const getChatById = async (req, res) => {
   }
 };
 
+const deleteChat = async (req, res) => {
+  try {
+    const deletedChat = await Chat.findByIdAndDelete(req.params.id);
+
+    if (!deletedChat) {
+      return res.status(404).json({ error: "Chat not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Chat deleted successfully" });
+  } catch (error) {
+    console.error("deleteChat error:", error);
+    res.status(500).json({ error: "Server error while deleting chat" });
+  }
+};
+
+const renameChat = async (req, res) => {
+  try {
+    const { title } = req.body;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({ error: "Title is required" });
+    }
+
+    const updatedChat = await Chat.findByIdAndUpdate(
+      req.params.id,
+      { title: title.trim() },
+      { new: true }
+    );
+
+    if (!updatedChat) {
+      return res.status(404).json({ error: "Chat not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Chat renamed successfully",
+      chat: updatedChat,
+    });
+  } catch (error) {
+    console.error("renameChat error:", error);
+    res.status(500).json({ error: "Server error while renaming chat" });
+  }
+};
+
 module.exports = {
   sendMessage,
   getChats,
   getChatById,
-};
+  deleteChat,
+  renameChat,
+}

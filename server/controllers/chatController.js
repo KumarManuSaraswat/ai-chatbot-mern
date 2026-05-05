@@ -50,7 +50,7 @@ const sendMessage = async (req, res) => {
 
     await chat.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       chatId: chat._id,
       reply: botReply,
@@ -58,9 +58,15 @@ const sendMessage = async (req, res) => {
     });
   } catch (error) {
     console.error("sendMessage error:", error);
-    res.status(500).json({
+
+    if (error.status === 429) {
+      return res.status(429).json({
+        error: "Gemini API limit reached. Please wait a minute and try again.",
+      });
+    }
+
+    return res.status(500).json({
       error: "Server error while generating AI response",
-      details: error.message,
     });
   }
 };
@@ -96,7 +102,9 @@ const deleteChat = async (req, res) => {
       return res.status(404).json({ error: "Chat not found" });
     }
 
-    res.status(200).json({ success: true, message: "Chat deleted successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Chat deleted successfully" });
   } catch (error) {
     console.error("deleteChat error:", error);
     res.status(500).json({ error: "Server error while deleting chat" });
@@ -138,4 +146,4 @@ module.exports = {
   getChatById,
   deleteChat,
   renameChat,
-}
+};
